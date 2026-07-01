@@ -405,6 +405,55 @@
     }
     .agenda-note strong { color: var(--color-text); }
 
+    /* === Audience Picker (Step 1) === */
+    .audience-picker {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-card);
+      padding: 36px 32px; margin-bottom: 40px;
+    }
+    .audience-picker__options { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; }
+    @media (max-width: 700px) { .audience-picker__options { grid-template-columns: 1fr; } }
+    .audience-card {
+      border: 2px solid var(--color-border); border-radius: var(--radius-lg);
+      padding: 32px 28px; cursor: pointer; transition: all 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .audience-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-card-hover); transform: translateY(-4px); }
+    .audience-card.active { border-color: var(--color-primary); background: var(--color-primary-light); }
+    .audience-card.active::after {
+      content: '✓'; position: absolute; top: 14px; right: 16px;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--color-primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700;
+    }
+    .audience-card__icon { font-size: 52px; margin-bottom: 16px; }
+    .audience-card__title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .audience-card__role {
+      display: inline-block; font-size: 12px; font-weight: 600;
+      color: var(--color-text-secondary); background: var(--color-surface-alt);
+      padding: 3px 10px; border-radius: 12px; margin-bottom: 12px;
+    }
+    .audience-card__desc { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 16px; }
+    .audience-card__includes { list-style: none; }
+    .audience-card__includes li {
+      font-size: 13px; color: var(--color-text); padding: 5px 0;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .audience-card__includes li::before { content: '→'; color: var(--color-primary); font-weight: 700; }
+    .audience-card--team .audience-card__icon { } /* team uses default color */
+    .audience-card--org .audience-card__icon { }
+
+    .step-connector {
+      text-align: center; padding: 12px 0; color: var(--color-text-light); font-size: 24px;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .step-connector.visible { opacity: 1; }
+    .steps-container > div { transition: opacity 0.4s, max-height 0.5s ease; }
+    .step-hidden { opacity: 0.3; pointer-events: none; max-height: 80px !important; overflow: hidden; }
+
     /* === Agenda Choice === */
     .agenda-choice {
       background: var(--color-surface);
@@ -638,13 +687,53 @@
       </div>
     </div>
 
-    <!-- 3 Delivery Models -->
+    <!-- Steps Flow -->
     <section id="models">
 
-      <!-- Step 1: Agenda Choice -->
-      <div class="agenda-choice animate-in animate-delay-1" id="agenda-step">
+      <!-- Step 1: Audience Picker -->
+      <div class="audience-picker animate-in animate-delay-1" id="audience-step">
         <div class="section-header" style="margin-bottom: 24px;">
-          <span class="section-header__label">Step 1 — Choose Your Agenda</span>
+          <span class="section-header__label">Step 1 — Who Are You Delivering To?</span>
+          <h3 class="section-header__title">Choose Your Delivery Scope</h3>
+          <p class="section-header__desc">Are you a manager looking to run Camp AIR for your direct team, or are you rolling it out across an organization with multiple teams?</p>
+        </div>
+        <div class="audience-picker__options">
+          <!-- Team Option -->
+          <div class="audience-card audience-card--team" onclick="selectAudience('team', this)">
+            <div class="audience-card__icon">👥</div>
+            <div class="audience-card__title">My Team</div>
+            <div class="audience-card__role">You are the manager of this team</div>
+            <p class="audience-card__desc">Run a focused Camp AIR experience for your direct team. You'll lead coordination, pick the sessions, and manage the schedule — with a lightweight playbook to guide you.</p>
+            <ul class="audience-card__includes">
+              <li>10–30 participants (your direct reports / immediate team)</li>
+              <li>Manager-led — you own the rollout</li>
+              <li>Minimal overhead — pre-built kit does the heavy lifting</li>
+              <li>Start-to-finish in ~5 weeks</li>
+            </ul>
+          </div>
+
+          <!-- Org Option -->
+          <div class="audience-card audience-card--org" onclick="selectAudience('org', this)">
+            <div class="audience-card__icon">🏢</div>
+            <div class="audience-card__title">My Organization</div>
+            <div class="audience-card__role">Multiple teams across an org or division</div>
+            <p class="audience-card__desc">Coordinate Camp AIR across many teams in your org or division. This requires a program lead, multi-cohort scheduling, and facilitator enablement to maintain consistency at scale.</p>
+            <ul class="audience-card__includes">
+              <li>50–500+ participants across multiple teams</li>
+              <li>Program lead + facilitator pool required</li>
+              <li>Multi-cohort scheduling & registration</li>
+              <li>Train-the-Trainer (TtT) and exec sponsor engagement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-connector" id="connector-1">▼</div>
+
+      <!-- Step 2: Agenda Choice -->
+      <div class="agenda-choice animate-in animate-delay-1 step-hidden" id="agenda-step">
+        <div class="section-header" style="margin-bottom: 24px;">
+          <span class="section-header__label">Step 2 — Choose Your Agenda</span>
           <h3 class="section-header__title">Standard Agenda or Build Your Own?</h3>
           <p class="section-header__desc">Start with the proven Camp AIR Immersion Week agenda, or customize your own by dragging sessions into time slots.</p>
         </div>
@@ -926,7 +1015,7 @@
       <!-- Delivery Options: Live vs Pre-Recorded -->
       <div class="delivery-options animate-in animate-delay-2" id="delivery-options">
         <div class="section-header" style="margin-bottom: 24px;">
-          <span class="section-header__label">Session Delivery Options</span>
+          <span class="section-header__label">Step 3 — Session Delivery Options</span>
           <h3 class="section-header__title">How Will Sessions Be Delivered?</h3>
           <p class="section-header__desc">Choose between live facilitation by your own SMEs or pre-recorded sessions from the asynchronous library. You can mix both approaches within a single cohort.</p>
         </div>
@@ -1258,6 +1347,17 @@
   </footer>
 
   <script>
+    function selectAudience(type, card) {
+      document.querySelectorAll('.audience-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      // Reveal Step 2 and connector
+      document.getElementById('connector-1').classList.add('visible');
+      document.getElementById('agenda-step').classList.remove('step-hidden');
+      // Smooth scroll to next step
+      setTimeout(() => {
+        document.getElementById('agenda-step').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
     function togglePanel(el) {
       el.classList.toggle('expanded');
     }
